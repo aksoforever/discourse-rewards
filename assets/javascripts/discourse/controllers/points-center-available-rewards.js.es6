@@ -93,8 +93,7 @@ export default Controller.extend({
         if (result) {
           return Reward.grant(reward)
             .then(() => {
-              // this.model.removeObject(reward);
-              // this.send("closeModal");
+              this.send('fetchNewAvailableRewardData');
             })
             .catch(() => {
               bootbox.alert(I18n.t("generic_error"));
@@ -102,5 +101,13 @@ export default Controller.extend({
         }
       }
     );
+  },
+
+  @action
+  fetchNewAvailableRewardData(){
+    ajax('/rewards.json').then((json)=>{
+      const newModel = Reward.createFromJson(json);
+      this.set('model',newModel);
+    })
   },
 });
