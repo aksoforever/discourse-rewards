@@ -54,6 +54,22 @@ function initializeDiscourseRewards(api) {
         content: I18n.t("discourse_rewards.my_points_center.profile_link_name"),
       });
     }
+
+    api.registerNotificationTypeRenderer("rewards", (NotificationTypeBase) => {
+      return class extends NotificationTypeBase {
+        get description() {
+          return I18n.t("notifications.rewards.redeemed", {
+            reward_title: this?.notification.data.reward.title,
+          });
+        }
+        get linkHref() {
+          return "/admin/rewards/grant";
+        }
+        get icon() {
+          return "gift";
+        }
+      };
+    });
   }
 }
 
