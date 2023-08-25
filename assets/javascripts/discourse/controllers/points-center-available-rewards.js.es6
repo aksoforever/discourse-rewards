@@ -14,7 +14,7 @@ export default Controller.extend({
   init() {
     this._super(...arguments);
 
-    this.messageBus.subscribe(`/u/rewards`, (data) => {
+    this.messageBus.subscribe(`/u/${this.currentUser.id}/rewards`, (data) => {
       this.replaceReward(data);
     });
   },
