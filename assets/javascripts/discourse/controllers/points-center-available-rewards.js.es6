@@ -93,7 +93,8 @@ export default Controller.extend({
         if (result) {
           return Reward.grant(reward)
             .then(() => {
-              this.send('fetchNewAvailableRewardData');
+               location.reload();
+              // this.send('fetchNewAvailableRewardData');
             })
             .catch(() => {
               bootbox.alert(I18n.t("generic_error"));
