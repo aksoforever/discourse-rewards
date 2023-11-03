@@ -9,6 +9,7 @@ import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 
 export default Controller.extend({
+  dialog: service(),
   routing: service("-routing"),
   page: 0,
   loading: false,
@@ -159,23 +160,22 @@ export default Controller.extend({
       return;
     }
 
-    return bootbox.confirm(
-      I18n.t("admin.rewards.delete_confirm"),
-      I18n.t("no_value"),
-      I18n.t("yes_value"),
-      (result) => {
-        if (result) {
-          return Reward.destroy(reward)
-            .then(() => {
-              this.model.rewards.removeObject(reward);
-              this.set("model.rewards", this.model.rewards);
-              this.send("closeModal");
-            })
-            .catch(() => {
-              bootbox.alert(I18n.t("generic_error"));
-            });
-        }
+    this.dialog.yesNoConfirm({
+      title: I18n.t("admin.rewards.grant_confirm"),
+      body: I18n.t("no_value"),
+      yes: I18n.t("yes_value"),
+      no: I18n.t("no_value"),
+      didConfirm: () => {
+        return Reward.destroy(reward)
+        .then(() => {
+          this.model.rewards.removeObject(reward);
+          this.set("model.rewards", this.model.rewards);
+          this.send("closeModal");
+        })
+        .catch(() => {
+          dialog.alert(I18n.t("generic_error"));
+        });
       }
-    );
+    });
   },
 });
