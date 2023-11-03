@@ -3,10 +3,10 @@ import { inject as service } from "@ember/service";
 import { action } from "@ember/object";
 import Reward from "../models/reward";
 import I18n from "I18n";
-import bootbox from "bootbox";
 import { ajax } from "discourse/lib/ajax";
 
 export default Controller.extend({
+  dialog: service(),
   routing: service("-routing"),
   page: 0,
   loading: false,
@@ -85,23 +85,21 @@ export default Controller.extend({
       return;
     }
 
-    return bootbox.confirm(
-      I18n.t("admin.rewards.redeem_confirm"),
-      I18n.t("no_value"),
-      I18n.t("yes_value"),
-      (result) => {
-        if (result) {
-          return Reward.grant(reward)
-            .then(() => {
-               location.reload();
-              // this.send('fetchNewAvailableRewardData');
-            })
-            .catch(() => {
-              bootbox.alert(I18n.t("generic_error"));
-            });
-        }
+    this.dialog.yesNoConfirm({
+      title: I18n.t("admin.rewards.grant_confirm"),
+      body: I18n.t("no_value"),
+      yes: I18n.t("yes_value"),
+      no: I18n.t("no_value"),
+      didConfirm: () => {
+        return Reward.grant(reward)
+          .then(() => {
+            location.reload();
+          })
+          .catch(() => {
+            this.dialog.alert(I18n.t("generic_error"));
+          });
       }
-    );
+    });
   },
 
   @action
