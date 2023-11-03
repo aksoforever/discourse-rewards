@@ -5,10 +5,12 @@ import { propertyNotEqual } from "discourse/lib/computed";
 import getURL from "discourse-common/lib/get-url";
 import EmberObject, { action } from "@ember/object";
 import { isEmpty } from "@ember/utils";
+import { inject as service } from "@ember/service";
 
 const IMAGE = "image";
 
 export default Component.extend({
+  dialog: service(),
   saving: false,
   savingStatus: "",
   selectedGraphicType: null,
@@ -154,7 +156,7 @@ export default Component.extend({
   actions: {
     saveReward() {
       if (!this.reward.upload_id) {
-        bootbox.alert("Please Select Image Before Uploading");
+        dialog.alert("Please Select Image Before Uploading");
 
         return;
       }
