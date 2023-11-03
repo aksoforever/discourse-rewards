@@ -1,10 +1,11 @@
 import Controller from "@ember/controller";
 import UserReward from "../models/user-reward";
 import { action } from "@ember/object";
-import bootbox from "bootbox";
+import { inject as service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 
 export default Controller.extend({
+  dialog: service(),
   page: 0,
   loading: false,
 
@@ -43,23 +44,23 @@ export default Controller.extend({
       return;
     }
 
-    return bootbox.confirm(
-      I18n.t("admin.rewards.grant_confirm"),
-      I18n.t("no_value"),
-      I18n.t("yes_value"),
-      (result) => {
-        if (result) {
-          return UserReward.grant(user_reward)
-            .then(() => {
-              this.model.userRewards.removeObject(user_reward);
-              this.send("closeModal");
-            })
-            .catch(() => {
-              bootbox.alert(I18n.t("generic_error"));
-            });
-        }
+    this.dialog.yesNoConfirm({
+      title: I18n.t("admin.rewards.grant_confirm"),
+      body: I18n.t("no_value"),
+      yes: I18n.t("yes_value"),
+      no: I18n.t("no_value"),
+      didConfirm: () => {
+        return UserReward.grant(user_reward)
+        .then(() => {
+          this.model.userRewards.removeObject(user_reward);
+          this.send("closeModal");
+        })
+        .catch(() => {
+          dialog.alert(I18n.t("generic_error"));
+        });
+        
       }
-    );
+    });
   },
 
   @action
@@ -68,22 +69,23 @@ export default Controller.extend({
       return;
     }
 
-    return bootbox.confirm(
-      I18n.t("admin.rewards.cancel_grant_confirm"),
-      I18n.t("no_value"),
-      I18n.t("yes_value"),
-      (result) => {
-        if (result) {
-          return UserReward.cancelReward(user_reward, reason)
-            .then(() => {
-              this.model.userRewards.removeObject(user_reward);
-              this.send("closeModal");
-            })
-            .catch(() => {
-              bootbox.alert(I18n.t("generic_error"));
-            });
-        }
+        this.dialog.confirm({
+      title: I18n.t("admin.rewards.cancel_grant_confirm"),
+      body: I18n.t("no_value"),
+      yes: I18n.t("yes_value"),
+      no: I18n.t("no_value"),
+
+      didConfirm: () => {
+        return UserReward.cancelReward(user_reward, reason)
+        .then(() => {
+          this.model.userRewards.removeObject(user_reward);
+          this.send("closeModal");
+        })
+        .catch(() => {
+          dialog.alert(I18n.t("generic_error"));
+        });
+        
       }
-    );
+    });
   },
 });
