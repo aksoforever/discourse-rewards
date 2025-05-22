@@ -30,23 +30,28 @@ UserReward.reopenClass({
 
   createFromJson(json) {
     let userRewards = [];
-    if ("user_reward" in json) {
+    if (json && "user_reward" in json) {
       userRewards = [json.user_reward];
-    } else if ("user_reward_list" in json) {
-      userRewards = json["user_reward_list"]["user_rewards"];
+    } else if (json && "user_reward_list" in json && json["user_reward_list"]) {
+      userRewards = json["user_reward_list"]["user_rewards"] || [];
     }
 
-    userRewards = userRewards.map((userRewardJson) => {
-      userRewardJson.reward = Reward.createFromJson(userRewardJson);
-      userRewardJson.user = User.create(userRewardJson.user);
-
+    userRewards = (userRewards || []).map((userRewardJson) => {
+      userRewardJson.reward = Reward.createFromJson(userRewardJson || {});
+      userRewardJson.user = User.create(userRewardJson.user || {});
       return userRewardJson;
     });
 
-    if ("user_reward" in json) {
+    if (json && "user_reward" in json) {
       return userRewards[0];
     } else {
-      return { userRewards, count: json["user_reward_list"]["count"] };
+      return {
+        userRewards,
+        count:
+          json && json["user_reward_list"]
+            ? json["user_reward_list"]["count"]
+            : 0,
+      };
     }
   },
 });

@@ -3,6 +3,7 @@ import RestModel from "discourse/models/rest";
 import { ajax } from "discourse/lib/ajax";
 import User from "discourse/models/user";
 import UserReward from "../models/user-reward";
+
 const Reward = RestModel.extend({});
 
 Reward.reopenClass({
@@ -49,27 +50,35 @@ Reward.reopenClass({
 
   createFromJson(json) {
     let rewards = [];
-    if ("reward" in json) {
+    if (json && "reward" in json) {
       rewards = [json.reward];
-    } else if ("reward_list" in json) {
-      rewards = json["reward_list"]["rewards"];
+    } else if (json && "reward_list" in json && json["reward_list"]) {
+      rewards = json["reward_list"]["rewards"] || [];
     }
 
-    rewards = rewards.map((rewardJson) => {
+    rewards = (rewards || []).map((rewardJson) => {
       if (!rewardJson) {
         return {};
       }
-
-      rewardJson.created_by = User.create(rewardJson.created_by);
-      rewardJson.user_rewards = UserReward.create(rewardJson.user_rewards);
-
+      rewardJson.created_by = User.create(rewardJson.created_by || {});
+      // If user_rewards is an array, create each one, otherwise default to empty array/object
+      if (Array.isArray(rewardJson.user_rewards)) {
+        rewardJson.user_rewards = rewardJson.user_rewards.map((ur) =>
+          UserReward.create(ur || {})
+        );
+      } else {
+        rewardJson.user_rewards = [];
+      }
       return rewardJson;
     });
 
-    if ("reward" in json) {
+    if (json && "reward" in json) {
       return rewards[0];
     } else {
-      return { rewards, count: json["reward_list"]["count"] };
+      return {
+        rewards,
+        count: json && json["reward_list"] ? json["reward_list"]["count"] : 0,
+      };
     }
   },
 });

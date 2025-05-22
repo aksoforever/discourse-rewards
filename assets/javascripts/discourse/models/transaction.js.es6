@@ -8,28 +8,33 @@ const Transaction = RestModel.extend({});
 Transaction.reopenClass({
   createFromJson(json) {
     let transactions = [];
-    if ("transaction" in json) {
+    if (json && "transaction" in json) {
       transactions = [json.transaction];
-    } else if ("transactions" in json) {
+    } else if (json && "transactions" in json) {
       transactions = json["transactions"];
     }
 
-    transactions = transactions.map((transactionJson) => {
-      transactionJson.created_by = User.create(transactionJson.user);
+    transactions = (transactions || []).map((transactionJson) => {
+      transactionJson.created_by = User.create(transactionJson.user || {});
 
-      if (transactionJson.user_reward) {
+      if (
+        transactionJson.user_reward &&
+        typeof transactionJson.user_reward === "object"
+      ) {
         transactionJson.user_reward = UserReward.createFromJson(
           transactionJson.user_reward
         );
+      } else {
+        transactionJson.user_reward = null;
       }
 
       return transactionJson;
     });
 
-    if ("transaction" in json) {
+    if (json && "transaction" in json) {
       return transactions[0];
     } else {
-      return { transactions, count: json["count"] };
+      return { transactions, count: json ? json["count"] : 0 };
     }
   },
 });
